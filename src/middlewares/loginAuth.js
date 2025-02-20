@@ -20,7 +20,7 @@ async function auth(req, res, next) {
   maxAge: 365 * 24 * 60 * 60 * 1000, 
       });
       res.redirect(
-        `/markethealers/auth/newUserInfo?fullname=${user.fullName}&email=${user.email}&platform=${user.platform}&profileUrl=${user.profileUrl}`
+        `/markethealers/auth/newUserInfo?email=${user.email}&platform=${user.platform}&profileUrl=${user.profileUrl}`
       );
     } else {
       req.user = user;

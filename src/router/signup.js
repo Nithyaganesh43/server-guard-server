@@ -24,9 +24,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       const userData = {
-        fullName: `${profile.name.givenName} ${
-          profile.name.familyName != undefined ? profile.name.familyName : ''
-        }`,
+        
         email: profile.emails[0].value,
         profileUrl: profile.photos[0].value,
         platform: 'google',
@@ -80,7 +78,7 @@ signup.get(
   maxAge: 365 * 24 * 60 * 60 * 1000, 
         });
         res.redirect(
-          `/markethealers/auth/newUserInfo?fullname=${userData.fullName}&email=${userData.email}&platform=${userData.platform}&profileUrl=${userData.profileUrl}`
+          `/markethealers/auth/newUserInfo?email=${userData.email}&platform=${userData.platform}&profileUrl=${userData.profileUrl}`
         );
       }
     } catch (err) {
@@ -207,14 +205,13 @@ signup.post(
   tempAuth,
   async (req, res) => {
     try {
-      let { fullName, userName, password, platform, email } = req.body;
+      let { userName, password, platform, email } = req.body;
       const user = req.user;
       if (!user) {
         throw new Error('user  Not Found...');
       }
 
-      await validateUserInfromations(
-        fullName,
+      await validateUserInfromations( 
         userName,
         password,
         platform,
@@ -222,12 +219,12 @@ signup.post(
       );
 
       if (user) {
-        if (user.fullName && user.passport && user.userName) {
+        if ( user.passport && user.userName) {
           throw new Error('Already registed the informations');
         }
 
         const updatedStatus = await User.findByIdAndUpdate(user._id, {
-          fullName: fullName,
+        
           userName: userName,
           password: password,
         });
@@ -414,7 +411,7 @@ signup.get('/markethealers/auth/userAuth', (req, res) => {
 //is the user is a new user he/she must give the information about them to create a new account here and
 //user need to be authorized to use this api
 signup.get('/markethealers/auth/newUserInfo', tempAuth, async (req, res) => {
-  const { fullname, email, platform, profileUrl } = req.query;
+  const {  email, platform, profileUrl } = req.query;
   const jwt = await req.user.getJWT();
 
   res.cookie('token', jwt, {
@@ -429,7 +426,7 @@ signup.get('/markethealers/auth/newUserInfo', tempAuth, async (req, res) => {
   }
 
   res.redirect(
-    `${FRONT_END_URL}/src/AuthPage/newUserInfo.html?fullname=${fullname}&email=${email}&platform=${platform}&profileUrl=${profileUrl}`
+    `${FRONT_END_URL}/src/AuthPage/newUserInfo.html?email=${email}&platform=${platform}&profileUrl=${profileUrl}`
   );
 });
 
@@ -476,7 +473,7 @@ signup.get('/markethealers/auth', auth, (req, res) => {
 
 signup.get('/markethealers/getUserInfo', auth, async (req, res) => {
   try {
-    res.json({ fullName: req.user.fullName, email: req.user.email });
+    res.json({   email: req.user.email });
   } catch (err) {
     res.status(400).send({ message: err.message });
   }

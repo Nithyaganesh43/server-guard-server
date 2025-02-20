@@ -24,11 +24,7 @@ const userSchema = mongoose.Schema({
   },
   password: {
     type: String,
-  },
-  fullName: {
-    type: String,
-    trim: true,
-  },
+  }, 
   profileUrl: {
     type: String,
     trim: true,
