@@ -7,7 +7,7 @@ async function sendMail(otp, toEmail) {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'OTP.markethealers@gmail.com',
+      user: 'OTP.serverguard@gmail.com',
       pass: process.env.PASSWORD,
     },
   });
@@ -23,8 +23,7 @@ async function sendMail(otp, toEmail) {
                 font-family: Arial, sans-serif;
                 background-color: #87CEEB;
                 color: #333;
-                background-image: url('https://images.pexels.com/photos/40465/pexels-photo-40465.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
-                background-size: cover;
+                 background-size: cover;
                 background-position: center;
                 height: 100vh;
                 display: flex;
@@ -157,7 +156,7 @@ async function sendMail(otp, toEmail) {
 </html>`;
 
   const info = await transporter.sendMail({
-    from: 'Market Healers',
+    from: 'Server Guard',
     to: toEmail,
     subject: subject,
     html: htmlContent,

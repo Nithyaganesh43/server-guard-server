@@ -18,7 +18,7 @@ async function registerUserAuth(req,res,next) {
      const userid = await jwt.verify(tokenByUser , process.env.SECRET);
       const user = await User.findById( userid );
        if(!user){
-        throw new Error("login with github or google")
+        throw new Error("login with  google")
        }
 req.user=user;
        next();

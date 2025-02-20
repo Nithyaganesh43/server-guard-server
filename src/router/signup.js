@@ -1,4 +1,3 @@
-// D:\projects\markethealers\markethealers\server-side\src\router\signup.js
 const signup = require('express').Router();
 const passport = require('passport');
 const User = require('../models/user');
@@ -6,7 +5,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { auth, tempAuth } = require('../middlewares/loginAuth');
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const FRONT_END_URL = process.env.FRONT_END_URL;
+const FRONT_END_URL = 'https://server-guard-auth.vercel.app';
 
 const mail = require('../helper/mail');
 const validateUserInfromations = require('../helper/validateUserInfromations');
@@ -21,7 +20,7 @@ passport.use(
       clientID: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
       callbackURL:
-        'https://server.markethealers.com/markethealers/auth/auth/google/callback',
+        'https://server-guard-server.onrender.com/markethealers/auth/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       const userData = {
@@ -171,7 +170,7 @@ signup.post('/markethealers/auth/auth/markethealers', async (req, res) => {
 
     const user = await User.findOne({
       email: email,
-      platform: 'markethealers',
+      platform: 'Server Guard',
     });
     if (user) {
       throw new Error('Email Already Registred');
@@ -337,7 +336,7 @@ signup.post('/markethealers/auth/forgotPasswordGetOtp', async (req, res) => {
     email = email.trim().toLowerCase();
     const user = await User.findOne({
       email: email,
-      platform: 'markethealers',
+      platform: 'Server Guard',
     });
 
     if (!user) {
@@ -485,7 +484,7 @@ signup.get('/markethealers/getUserInfo', auth, async (req, res) => {
 
 //redirect user to home oage if and only the user is authorized
 signup.get('/markethealers/auth/home', auth, async (req, res) => {
-  res.redirect(`https://markethealers.markethealers.com`);
+  res.redirect(FRONT_END_URL);
 });
 
 module.exports = signup;
