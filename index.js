@@ -1,77 +1,107 @@
-require('dotenv').config();
 const express = require('express');
-const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
-const compression = require('compression');
-const connectToDB = require('./src/config/database');
-const ping_pong = require('./src/ping-pong');
-const signup = require('./src/router/signup');
+const cors = require('cors');
+const ping_pong = require('./ping-pong');
+
 const app = express();
+const port = 3000; // Define the port
 
-app.use(helmet());
-
-const allowedOrigins = [
-  'http://localhost:3000'
-];
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, OPTIONS'
-    );
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-Requested-With'
-    );
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  next();
-});
-
+app.use(cors());
+app.use(express.json());
 app.use(ping_pong);
 
-app.use(
-  rateLimit({
-    windowMs: 10 * 60 * 1000,
-    max: 60,
-    message: 'Too many requests, please try again later.',
-  })
-);
+let cmd = '000';
 
-app.use(compression());
-app.use(express.json());
-app.use(cookieParser());
+app.get('/get', (req, res) => res.send(cmd));
 
-app.use(signup);
- 
- 
+app.get('/set/:value', (req, res) => {
+  let { value } = req.params;
+  let message, color;
+
+  if (/^[0-5]{1,50}$/.test(value)) {
+    cmd = value;
+    message = `✅ Command updated to ${cmd}`;
+    color = 'green';
+  } else {
+    message = '❌ Invalid command. Enter 1 to 50 digits (0-5).';
+    color = 'red';
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Command Status</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="flex items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+        <div class="max-w-md w-full p-6 bg-gray-800 rounded-xl shadow-lg text-center">
+            <h1 class="text-2xl font-bold mb-4" style="color: ${color};">${message}</h1>
+            <a href="/" class="mt-4 inline-block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-md text-center">
+                Go Back
+            </a>
+        </div>
+    </body>
+    </html>
+  `);
+});
+
 app.use((req, res) => {
-  res.status(404).json({ error: '143 Page not found' });
+  const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-900 text-white p-4">
+    <div class="max-w-lg w-full p-6 bg-gray-800 rounded-xl shadow-lg">
+        <h1 class="text-2xl font-bold text-center mb-4">Command Controller</h1>
+        <p class="text-sm text-gray-400 text-center mb-4">This page explains how to interact with the backend server to control commands manually.</p>
+        
+        <h2 class="text-lg font-semibold text-gray-200 mb-2">Available API Routes</h2>
+        <ul class="text-gray-300 text-sm mb-4 space-y-2">
+            <li><strong>GET /get</strong> - Retrieves the currently stored command.</li>
+            <li><strong>GET /set/:value</strong> - Updates the command with a new value (1-50 digits, only 0-5).</li>
+        </ul>
+
+        <h2 class="text-lg font-semibold text-gray-200 mb-2">Enter Command</h2>
+        <input id="cmdInput" type="text" placeholder="Enter command (1-50 digits, 0-5)" class="w-full p-2 text-gray-900 rounded-md mb-4" maxlength="50">
+        <button onclick="setCommand()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-md">Set Command</button>
+
+        <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">Get Current Command</h2>
+        <button onclick="getCommand()" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-2 rounded-md">Get Command</button>
+
+        <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">ESP8266 Usage</h2>
+        <p class="text-sm text-gray-400">Use the following API endpoints in your ESP8266 HTTP requests:</p>
+        <pre class="bg-gray-700 text-white p-2 rounded-md text-sm">
+GET ${req.protocol}://${req.get('host')}/get 
+        </pre>
+
+        <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">Full URL of this page:</h2>
+        <p class="text-gray-300 text-sm">${url}</p>
+    </div>
+
+    <script>
+        function setCommand() {
+            const cmd = document.getElementById('cmdInput').value;
+            if (/^[0-5]{1,50}$/.test(cmd)) {
+                window.open(\`/set/\${cmd}\`, '_blank');
+            } else {
+                alert('Invalid command. Enter 1 to 50 digits (0-5) only.');
+            }
+        }
+
+        function getCommand() {
+            window.open('/get', '_blank');
+        }
+    </script>
+</body>
+</html>`);
 });
 
-app.use((err, req, res, next) => {
-  console.error('Error:', err);  
-  res.status(500).json({ error: 'Internal Server Error' });
-});
 
-
-connectToDB()
-  .then(() => {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT} successfully`);
-    });
-  })
-  .catch((error) => {
-    console.error('Error connecting to database:', error);
-  });
+app.listen(port, () => console.log(`Server running on port ${port}`));
