@@ -48,7 +48,7 @@ app.get('/set/:value', (req, res) => {
 });
 
 app.use((req, res) => {
-  const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  const url = `https://${req.get('host')}${req.originalUrl}`;
   res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,7 +78,7 @@ app.use((req, res) => {
         <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">ESP8266 Usage</h2>
         <p class="text-sm text-gray-400">Use the following API endpoints in your ESP8266 HTTP requests:</p>
         <pre class="bg-gray-700 text-white p-2 rounded-md text-sm">
-GET ${req.protocol}://${req.get('host')}/get 
+GET https://${req.get('host')}/get 
         </pre>
 
         <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">Full URL of this page:</h2>
