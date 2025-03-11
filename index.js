@@ -1,107 +1,116 @@
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const ping_pong = require('./ping-pong');
+const cookieParser = require('cookie-parser');
+const { OpenAI } = require('openai');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
-const port = 3000; // Define the port
+const port = process.env.PORT || 3000;
+const openai = new OpenAI({ apiKey: process.env.API_KEY });
+const allowedOrigins = ['http://localhost:3000'];
+let cmd = '135';
 
-app.use(cors());
-app.use(express.json());
-app.use(ping_pong);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  keyGenerator: (req) => req.cookies.access_token || req.ip,
+  message: 'Too many requests, please try again later',
+});
 
-let cmd = '000';
+app.use(express.json({ limit: '1kb' }));
+app.use(cookieParser());
 
-app.get('/get', (req, res) => res.send(cmd));
-
-app.get('/set/:value', (req, res) => {
-  let { value } = req.params;
-  let message, color;
-
-  if (/^[0-5]{1,50}$/.test(value)) {
-    cmd = value;
-    message = `✅ Command updated to ${cmd}`;
-    color = 'green';
-  } else {
-    message = '❌ Invalid command. Enter 1 to 50 digits (0-5).';
-    color = 'red';
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, OPTIONS'
+    );
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, X-Requested-With'
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
-
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Command Status</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
-    <body class="flex items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-        <div class="max-w-md w-full p-6 bg-gray-800 rounded-xl shadow-lg text-center">
-            <h1 class="text-2xl font-bold mb-4" style="color: ${color};">${message}</h1>
-            <a href="/" class="mt-4 inline-block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-md text-center">
-                Go Back
-            </a>
-        </div>
-    </body>
-    </html>
-  `);
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  next();
 });
 
-app.use((req, res) => {
-  const url = `https://${req.get('host')}${req.originalUrl}`;
-  res.send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Command Control</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="flex items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-    <div class="max-w-lg w-full p-6 bg-gray-800 rounded-xl shadow-lg">
-        <h1 class="text-2xl font-bold text-center mb-4">Command Controller</h1>
-        <p class="text-sm text-gray-400 text-center mb-4">This page explains how to interact with the backend server to control commands manually.</p>
-        
-        <h2 class="text-lg font-semibold text-gray-200 mb-2">Available API Routes</h2>
-        <ul class="text-gray-300 text-sm mb-4 space-y-2">
-            <li><strong>GET /get</strong> - Retrieves the currently stored command.</li>
-            <li><strong>GET /set/:value</strong> - Updates the command with a new value (1-50 digits, only 0-5).</li>
-        </ul>
-
-        <h2 class="text-lg font-semibold text-gray-200 mb-2">Enter Command</h2>
-        <input id="cmdInput" type="text" placeholder="Enter command (1-50 digits, 0-5)" class="w-full p-2 text-gray-900 rounded-md mb-4" maxlength="50">
-        <button onclick="setCommand()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold p-2 rounded-md">Set Command</button>
-
-        <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">Get Current Command</h2>
-        <button onclick="getCommand()" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold p-2 rounded-md">Get Command</button>
-
-        <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">ESP8266 Usage</h2>
-        <p class="text-sm text-gray-400">Use the following API endpoints in your ESP8266 HTTP requests:</p>
-        <pre class="bg-gray-700 text-white p-2 rounded-md text-sm">
-GET https://${req.get('host')}/get 
-        </pre>
-
-        <h2 class="text-lg font-semibold text-gray-200 mt-4 mb-2">Full URL of this page:</h2>
-        <p class="text-gray-300 text-sm">${url}</p>
-    </div>
-
-    <script>
-        function setCommand() {
-            const cmd = document.getElementById('cmdInput').value;
-            if (/^[0-5]{1,50}$/.test(cmd)) {
-                window.open(\`/set/\${cmd}\`, '_blank');
-            } else {
-                alert('Invalid command. Enter 1 to 50 digits (0-5) only.');
-            }
-        }
-
-        function getCommand() {
-            window.open('/get', '_blank');
-        }
-    </script>
-</body>
-</html>`);
+app.post('/getAccess', (req, res) => {
+  try {
+    const password = req.body.password;
+    if (password === process.env.PASSWORD) {
+      res.cookie('access_token', process.env.PASSWORD, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      return res.send('success');
+    }
+    res.status(400).send('Wrong Password');
+  } catch (error) {
+    console.error('Error in getAccess:', error.message);
+    res.status(500).send('Server Error');
+  }
 });
 
+const updateCmdUsingAiWithUserInput = async (userInput) => {
+  try {
+    const prompt = `You are an ultra-smart home assistant that extracts control commands from Tamil or English input, including indirect speech.
+Devices:
+Light: 0=OFF, 1=ON
+Fan: 2=OFF, 3=ON
+Pump: 4=OFF, 5=ON
+Prev Cmd: "${cmd}"
+Instructions:
+- Light: ON if visibility issue or needed, else OFF.
+- Fan: ON if air, cooling, or relaxation needed, else OFF.
+- Pump: ON if water needed, OFF if tank full.
+- Combined: Give one cmd for multiple needs (e.g., sleeping → "12").
+- All: Turn all ON ("135") or OFF ("024") if needed.
+Rules:
+- Extract intent from context (emotion/situation).
+- Return only necessary numbers (e.g., "14"), max **3** unique.
+- No extra numbers, spaces, or text.
+- If no action, return "" (empty).
+Examples:
+"Thanni varala" → "4"
+"Room dark ah iruku" → "1"
+"Semma heat ah iruku" → "3"
+"Window la kaathu pothum" → "2"
+"I have enough ventilation" → "0"
+User Input: (${userInput})
+Return only the correct numbers or ""`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4-turbo',
+      messages: [{ role: 'system', content: prompt }],
+      max_tokens: 3,
+    });
+
+    return response.choices?.[0]?.message?.content?.trim() || '';
+  } catch (error) {
+    console.error('Error:', error.message);
+    return '';
+  }
+};
+
+app.post('/request', limiter, async (req, res) => {
+  try {
+    if (req.cookies.access_token !== process.env.PASSWORD)
+      throw new Error('Access Denied');
+    const message = req.body?.message;
+    if (!message || message.length < 3 || message.length > 100)
+      return res.status(400).send('Invalid input length');
+    const cmd = await updateCmdUsingAiWithUserInput(message);
+    res.send(cmd);
+  } catch (e) {
+    console.error('Error in /request:', e.message);
+    res.status(403).send('Access Denied');
+  }
+});
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
