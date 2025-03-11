@@ -105,12 +105,16 @@ app.post('/request', limiter, async (req, res) => {
     const message = req.body?.message;
     if (!message || message.length < 3 || message.length > 100)
       return res.status(400).send('Invalid input length');
-    const cmd = await updateCmdUsingAiWithUserInput(message);
+     cmd = await updateCmdUsingAiWithUserInput(message);
     res.send(cmd);
   } catch (e) {
     console.error('Error in /request:', e.message);
     res.status(403).send('Access Denied');
   }
+});
+
+app.get('/getcmd',(req,res)=>{
+    res.send(cmd);
 });
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
