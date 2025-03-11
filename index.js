@@ -57,6 +57,20 @@ app.post('/getAccess', (req, res) => {
   }
 });
 
+app.get('/checkAccess', (req, res) => {
+  try {
+    if (
+      !req.cookies.access_token ||
+      req.cookies.access_token !== process.env.PASSWORD
+    )
+      return res.status(403).send('Access Denied');
+    res.send('Authorized');
+  } catch (error) {
+    console.error('Error in checkAccess:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 const updateCmdUsingAiWithUserInput = async (userInput) => {
   try {
     const prompt = `You are an ultra-smart home assistant that extracts control commands from Tamil or English input, including indirect speech.
@@ -105,7 +119,7 @@ app.post('/request', limiter, async (req, res) => {
     const message = req.body?.message;
     if (!message || message.length < 3 || message.length > 100)
       return res.status(400).send('Invalid input length');
-     cmd = await updateCmdUsingAiWithUserInput(message);
+    cmd = await updateCmdUsingAiWithUserInput(message);
     res.send(cmd);
   } catch (e) {
     console.error('Error in /request:', e.message);
@@ -113,8 +127,8 @@ app.post('/request', limiter, async (req, res) => {
   }
 });
 
-app.get('/getcmd',(req,res)=>{
-    res.send(cmd);
+app.get('/getcmd', (req, res) => {
+  res.send(cmd);
 });
 
 app.use((req, res) =>
@@ -130,7 +144,7 @@ app.use((req, res) =>
 <body class="bg-blue-100 text-black font-mono text-sm p-6 transition-colors duration-300">
     <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md transition-colors duration-300">
         <h1 class="text-2xl font-bold mb-4">API Usage Guide</h1>
-        
+       
         <div class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Get Access</h2>
             <p>To obtain access, send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/getAccess</code> with the correct password.</p>
@@ -148,7 +162,22 @@ app.use((req, res) =>
                 </div>
             </div>
         </div>
-
+ <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Check Access</h2>
+            <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/checkAccess</code> with a valid access token.</p>
+            <div class="bg-blue-200 p-4 mt-2 rounded">
+                <p>GET https://zenova-server.onrender.com/checkAccess</p>
+                <p>Headers: { "Cookie": "access_token=your_password" }</p>
+                <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+                    <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
+                    <p>"Authorized"</p>
+                </div>
+                <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+                    <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (403):</p>
+                    <p>"Access Denied"</p>
+                </div>
+            </div>
+        </div>
         <div class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Request Command</h2>
             <p>Send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/request</code> with a message.</p>
@@ -216,6 +245,5 @@ app.use((req, res) =>
 </html>
 `)
 );
-
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
