@@ -117,4 +117,105 @@ app.get('/getcmd',(req,res)=>{
     res.send(cmd);
 });
 
+app.use((req, res) =>
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Usage Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-blue-100 text-black font-mono text-sm p-6 transition-colors duration-300">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md transition-colors duration-300">
+        <h1 class="text-2xl font-bold mb-4">API Usage Guide</h1>
+        
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Get Access</h2>
+            <p>To obtain access, send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/getAccess</code> with the correct password.</p>
+            <div class="bg-blue-200 p-4 mt-2 rounded">
+                <p>POST https://zenova-server.onrender.com/getAccess</p>
+                <p>Headers: { "Content-Type": "application/json" }</p>
+                <p>Body: { "password": "your_password" } (Min length: 6, Max length: 20)</p>
+                <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+                    <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
+                    <p>"success"</p>
+                </div>
+                <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+                    <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
+                    <p>"Wrong Password"</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Request Command</h2>
+            <p>Send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/request</code> with a message.</p>
+            <div class="bg-blue-200 p-4 mt-2 rounded">
+                <p>POST https://zenova-server.onrender.com/request</p>
+                <p>Headers: { "Content-Type": "application/json", "Credentials": "true" }</p>
+                <p>Body: { "message": "Your command" } (Min length: 3, Max length: 100)</p>
+                <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+                    <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
+                    <p>"command_code Eg: 024"</p>
+                </div>
+                <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+                    <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
+                    <p>"Invalid input length"</p>
+                </div>
+                <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+                    <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (403):</p>
+                    <p>"Access Denied"</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Get Command</h2>
+            <p>Retrieve the latest command by sending a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/getcmd</code>.</p>
+            <div class="bg-blue-200 p-4 mt-2 rounded">
+                <p>GET https://zenova-server.onrender.com/getcmd</p>
+                <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+                    <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
+                    <p>"latest_command_code Eg: 135"</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Command Explanation</h2>
+            <p>The command (cmd) is a combination of 1 to 3 unique numbers from 0-5, each representing a specific device control:</p>
+            <ul class="bg-blue-200 p-4 rounded">
+                <li><i class="fas fa-hand-point-right"></i> 0 = Light OFF</li>
+                <li><i class="fas fa-hand-point-right"></i> 1 = Light ON</li>
+                <li><i class="fas fa-hand-point-right"></i> 2 = Fan OFF</li>
+                <li><i class="fas fa-hand-point-right"></i> 3 = Fan ON</li>
+                <li><i class="fas fa-hand-point-right"></i> 4 = Pump OFF</li>
+                <li><i class="fas fa-hand-point-right"></i> 5 = Pump ON</li>
+            </ul>
+            <p>Example outputs:</p>
+            <ul class="bg-blue-200 p-4 rounded mt-2">
+                <li><i class="fas fa-hand-point-right"></i> "024" → Light OFF, Fan OFF, Pump OFF</li>
+                <li><i class="fas fa-hand-point-right"></i> "135" → Light ON, Fan ON, Pump ON</li>
+                <li><i class="fas fa-hand-point-right"></i> "3" → Fan ON</li>
+            </ul>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Rate Limiter & Access Requirement</h2>
+            <p>The <code class="bg-blue-200 px-2 py-1 rounded">/request</code> API is protected by a rate limiter:</p>
+            <ul class="bg-blue-200 p-4 rounded">
+                <li><i class="fas fa-hand-point-right"></i> Each user can make a maximum of 100 requests per 15 minutes.</li>
+                <li><i class="fas fa-hand-point-right"></i> If the limit is exceeded, the API will return a 429 error: "Too many requests, please try again later."</li>
+            </ul>
+            <p>Additionally, access to the <code class="bg-blue-200 px-2 py-1 rounded">/request</code> API requires authentication using a valid access token.</p>
+        </div>
+    </div>
+</body>
+</html>
+`)
+);
+
+
 app.listen(port, () => console.log(`Server running on port ${port}`));
