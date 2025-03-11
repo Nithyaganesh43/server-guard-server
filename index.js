@@ -167,7 +167,7 @@ app.use((req, res) =>
             <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/checkAccess</code> with a valid access token.</p>
             <div class="bg-blue-200 p-4 mt-2 rounded">
                 <p>GET https://zenova-server.onrender.com/checkAccess</p>
-                <p>Headers: { "Cookie": "access_token=your_password" }</p>
+                <p>Headers:  { "Content-Type": "application/json", "Credentials": "true" }</p>
                 <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
                     <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
                     <p>"Authorized"</p>
