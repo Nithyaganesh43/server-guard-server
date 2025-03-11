@@ -141,7 +141,8 @@ app.use((req, res) =>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
-<body class="bg-blue-100 text-black font-mono text-sm p-6 transition-colors duration-300">
+<body class="bg-blue-100 text-gray-900 font-sans text-lg p-6 transition-colors duration-300">
+
     <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md transition-colors duration-300">
         <h1 class="text-2xl font-bold mb-4">API Usage Guide</h1>
        
