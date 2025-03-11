@@ -141,18 +141,18 @@ app.use((req, res) =>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
-<body class="bg-blue-100 text-gray-900 font-sans text-lg p-6 transition-colors duration-300">
+<body class="bg-blue-100 text-gray-900 font-sans text-base md:text-lg p-4 md:p-6 transition-colors duration-300">
 
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md transition-colors duration-300">
-        <h1 class="text-2xl font-bold mb-4">API Usage Guide</h1>
+    <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-md transition-colors duration-300">
+        <h1 class="text-2xl md:text-3xl font-bold mb-4 text-center">API Usage Guide</h1>
        
         <div class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Get Access</h2>
-            <p>To obtain access, send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/getAccess</code> with the correct password.</p>
-            <div class="bg-blue-200 p-4 mt-2 rounded">
-                <p>POST https://zenova-server.onrender.com/getAccess</p>
-                <p>Headers: { "Content-Type": "application/json" }</p>
-                <p>Body: { "password": "your_password" } (Min length: 6, Max length: 20)</p>
+            <p>To obtain access, send a POST request to <code class="bg-blue-200 px-2 py-1 rounded break-words">https://zenova-server.onrender.com/getAccess</code> with the correct password.</p>
+            <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
+                <p><strong>POST</strong> https://zenova-server.onrender.com/getAccess</p>
+                <p><strong>Headers:</strong> { "Content-Type": "application/json" }</p>
+                <p><strong>Body:</strong> { "password": "your_password" } (Min length: 6, Max length: 20)</p>
                 <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
                     <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
                     <p>"success"</p>
@@ -163,12 +163,13 @@ app.use((req, res) =>
                 </div>
             </div>
         </div>
- <div class="mb-6">
+
+        <div class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Check Access</h2>
-            <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/checkAccess</code> with a valid access token.</p>
-            <div class="bg-blue-200 p-4 mt-2 rounded">
-                <p>GET https://zenova-server.onrender.com/checkAccess</p>
-                <p>Headers:  { "Content-Type": "application/json", "Credentials": "true" }</p>
+            <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded break-words">https://zenova-server.onrender.com/checkAccess</code> with a valid access token.</p>
+            <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
+                <p><strong>GET</strong> https://zenova-server.onrender.com/checkAccess</p>
+                <p><strong>Headers:</strong> { "Content-Type": "application/json", "Credentials": "true" }</p>
                 <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
                     <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
                     <p>"Authorized"</p>
@@ -200,15 +201,15 @@ app.use((req, res) =>
                 </div>
             </div>
         </div>
-
         <div class="mb-6">
-            <h2 class="text-xl font-semibold mb-2">Get Command</h2>
-            <p>Retrieve the latest command by sending a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/getcmd</code>.</p>
-            <div class="bg-blue-200 p-4 mt-2 rounded">
-                <p>GET https://zenova-server.onrender.com/getcmd</p>
+            <h2 class="text-xl font-semibold mb-2">Get Commands</h2>
+            <p>To retrieve available commands, send a GET request to <code class="bg-blue-200 px-2 py-1 rounded break-words">https://zenova-server.onrender.com/getcmd</code>.</p>
+            <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
+                <p><strong>GET</strong> https://zenova-server.onrender.com/getcmd</p>
+                <p><strong>Headers:</strong> { "Accept": "application/json" }</p>
                 <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
                     <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
-                    <p>"latest_command_code Eg: 135"</p>
+                    <p>current cmd : "${cmd}"</p>
                 </div>
             </div>
         </div>
@@ -216,7 +217,7 @@ app.use((req, res) =>
         <div class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Command Explanation</h2>
             <p>The command (cmd) is a combination of 1 to 3 unique numbers from 0-5, each representing a specific device control:</p>
-            <ul class="bg-blue-200 p-4 rounded">
+            <ul class="bg-blue-200 p-4 rounded grid grid-cols-1 md:grid-cols-2 gap-2">
                 <li><i class="fas fa-hand-point-right"></i> 0 = Light OFF</li>
                 <li><i class="fas fa-hand-point-right"></i> 1 = Light ON</li>
                 <li><i class="fas fa-hand-point-right"></i> 2 = Fan OFF</li>
@@ -224,7 +225,7 @@ app.use((req, res) =>
                 <li><i class="fas fa-hand-point-right"></i> 4 = Pump OFF</li>
                 <li><i class="fas fa-hand-point-right"></i> 5 = Pump ON</li>
             </ul>
-            <p>Example outputs:</p>
+            <p class="mt-4">Example outputs:</p>
             <ul class="bg-blue-200 p-4 rounded mt-2">
                 <li><i class="fas fa-hand-point-right"></i> "024" → Light OFF, Fan OFF, Pump OFF</li>
                 <li><i class="fas fa-hand-point-right"></i> "135" → Light ON, Fan ON, Pump ON</li>
@@ -239,9 +240,10 @@ app.use((req, res) =>
                 <li><i class="fas fa-hand-point-right"></i> Each user can make a maximum of 100 requests per 15 minutes.</li>
                 <li><i class="fas fa-hand-point-right"></i> If the limit is exceeded, the API will return a 429 error: "Too many requests, please try again later."</li>
             </ul>
-            <p>Additionally, access to the <code class="bg-blue-200 px-2 py-1 rounded">/request</code> API requires authentication using a valid access token.</p>
+            <p class="mt-4">Additionally, access to the <code class="bg-blue-200 px-2 py-1 rounded">/request</code> API requires authentication using a valid access token.</p>
         </div>
     </div>
+
 </body>
 </html>
 `)
