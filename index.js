@@ -3,7 +3,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const { OpenAI } = require('openai');
 const rateLimit = require('express-rate-limit');
-
+const ping = require('./ping-pong');
 const app = express();
 const port = process.env.PORT || 3000;
 const openai = new OpenAI({ apiKey: process.env.API_KEY });
@@ -16,7 +16,7 @@ const limiter = rateLimit({
   keyGenerator: (req) => req.cookies.access_token || req.ip,
   message: 'Too many requests, please try again later',
 });
-
+app.use(ping);
 app.use(express.json({ limit: '1kb' }));
 app.use(cookieParser());
 
