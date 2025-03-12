@@ -5,7 +5,46 @@ const openai = new OpenAI({ apiKey: process.env.API_KEY });
 const allowedOrigins = ['http://localhost:3000'];
 let cmd = '135';
 let request = '';
+const updateCmdUsingAiWithUserInput = async (userInput) => {
+  try {
+    const prompt = `You are an ultra-smart home assistant that extracts control commands from Thanglish, Tamil or English input, including indirect speech.
+  Devices:
+  Light: 0=OFF, 1=ON
+  Fan: 2=OFF, 3=ON
+  Pump: 4=OFF, 5=ON
+  Prev Cmd: "${cmd}"
+  Instructions:
+  - Light: ON if visibility issue or needed, else OFF.
+  - Fan: ON if air, cooling, or relaxation needed, else OFF.
+  - Pump: ON if water needed, OFF if tank full.
+  - Combined: Give one cmd for multiple needs (e.g., sleeping → "12").
+  - All: Turn all ON ("135") or OFF ("024") if needed.
+  Rules:
+  - Extract intent from context (emotion/situation).
+  - Return only necessary numbers (e.g., "14"), max **3** unique.
+  - No extra numbers, spaces, or text.
+  - If no action, return "" (empty).
+  Examples:
+  "Thanni varala" → "4"
+  "Room dark ah iruku" → "1"
+  "Semma heat ah iruku" → "3"
+  "Window la kaathu pothum" → "2"
+  "I have enough ventilation" → "0"
+  User Input: (${userInput})
+  Return only the correct numbers or ""`;
 
+    const response = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: 'system', content: prompt }],
+      max_tokens: 3,
+    });
+
+    return response.choices?.[0]?.message?.content?.trim() || '';
+  } catch (error) {
+    console.error('Error:', error.message);
+    return '';
+  }
+};
 module.exports = {
   cors: (req, res, next) => {
     const origin = req.headers.origin;
@@ -48,6 +87,7 @@ module.exports = {
       res.status(500).send('Server Error');
     }
   },
+  updateCmdUsingAiWithUserInput: updateCmdUsingAiWithUserInput,
   check: (req, res) => {
     try {
       if (
@@ -59,46 +99,6 @@ module.exports = {
     } catch (error) {
       console.error('Error in checkAccess:', error.message);
       res.status(500).send('Server Error');
-    }
-  },
-  updateCmdUsingAiWithUserInput: async (userInput) => {
-    try {
-      const prompt = `You are an ultra-smart home assistant that extracts control commands from Thanglish, Tamil or English input, including indirect speech.
-  Devices:
-  Light: 0=OFF, 1=ON
-  Fan: 2=OFF, 3=ON
-  Pump: 4=OFF, 5=ON
-  Prev Cmd: "${cmd}"
-  Instructions:
-  - Light: ON if visibility issue or needed, else OFF.
-  - Fan: ON if air, cooling, or relaxation needed, else OFF.
-  - Pump: ON if water needed, OFF if tank full.
-  - Combined: Give one cmd for multiple needs (e.g., sleeping → "12").
-  - All: Turn all ON ("135") or OFF ("024") if needed.
-  Rules:
-  - Extract intent from context (emotion/situation).
-  - Return only necessary numbers (e.g., "14"), max **3** unique.
-  - No extra numbers, spaces, or text.
-  - If no action, return "" (empty).
-  Examples:
-  "Thanni varala" → "4"
-  "Room dark ah iruku" → "1"
-  "Semma heat ah iruku" → "3"
-  "Window la kaathu pothum" → "2"
-  "I have enough ventilation" → "0"
-  User Input: (${userInput})
-  Return only the correct numbers or ""`;
-
-      const response = await openai.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'system', content: prompt }],
-        max_tokens: 3,
-      });
-
-      return response.choices?.[0]?.message?.content?.trim() || '';
-    } catch (error) {
-      console.error('Error:', error.message);
-      return '';
     }
   },
   req: async (req, res) => {
@@ -285,30 +285,28 @@ module.exports = {
         </body>
         </html>
         `),
-        getcmd: (req, res) => {
-          res.send(cmd);
-        },
-        setcmd: (req, res) => {
-          try {
-            if (!req.params.cmd) return res.status(400).send('Missing cmd parameter');
-            cmd = req.params.cmd;
-            res.send(`Command updated to: ${cmd}`);
-          } catch (error) {
-            console.error('Error in setcmd:', error.message);
-            res.status(500).send('Server Error');
-          }
-        },
-        fackPutReq: (req, res) => {
-          let message = req.body.message;
-          if (!message || message.length < 1 || message.length > 100) {
-            return res.status(400).send('Invalid length');
-          }
-          res.send(message);
-        },
-        
-        fackGetReq: (req, res) => {
-          res.send(request);
-        },
-        
-      };
-      
+  getcmd: (req, res) => {
+    res.send(cmd);
+  },
+  setcmd: (req, res) => {
+    try {
+      if (!req.params.cmd) return res.status(400).send('Missing cmd parameter');
+      cmd = req.params.cmd;
+      res.send(`Command updated to: ${cmd}`);
+    } catch (error) {
+      console.error('Error in setcmd:', error.message);
+      res.status(500).send('Server Error');
+    }
+  },
+  fackPutReq: (req, res) => {
+    let message = req.body.message;
+    if (!message || message.length < 1 || message.length > 100) {
+      return res.status(400).send('Invalid length');
+    }
+    res.send(message);
+  },
+
+  fackGetReq: (req, res) => {
+    res.send(request);
+  },
+};
