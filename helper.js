@@ -31,7 +31,7 @@ const updateCmdUsingAiWithUserInput = async (userInput) => {
   "Window la kaathu pothum" → "2"
   "I have enough ventilation" → "0"
   User Input: (${userInput})
-  Return only the correct numbers or ""`;
+  Return only the correct numbers or nothing`;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
