@@ -4,7 +4,7 @@ const { OpenAI } = require('openai');
 const openai = new OpenAI({ apiKey: process.env.API_KEY });
 const allowedOrigins = ['http://localhost:3000'];
 let cmd = '135';
-
+let request = '';
 
 module.exports = {
   cors: (req, res, next) => {
@@ -168,7 +168,7 @@ module.exports = {
             <h2 class="text-xl font-semibold mb-2">Request Command</h2>
             <p>Send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/request</code> with a message.</p>
             <div class="bg-blue-200 p-4 mt-2 rounded">
-                <p>POST https://zenova-server.onrender.com/request</p>
+                <p><strong>POST</strong> https://zenova-server.onrender.com/request</p>
                 <p>Headers: { "Content-Type": "application/json", "Credentials": "true" }</p>
                 <p>Body: { "message": "Your command" } (Min length: 3, Max length: 100)</p>
                 <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
@@ -186,6 +186,36 @@ module.exports = {
             </div>
         </div>
         <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Fake PUT Request</h2>
+    <p>Send a post request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/fackPutReq</code> with a message.</p>
+    <div class="bg-blue-200 p-4 mt-2 rounded">
+        <p><strong>POST</strong> https://zenova-server.onrender.com/fackPutReq</p>
+        <p>Headers: { "Content-Type": "application/json" }</p>
+        <p>Body: { "message": "Your text" } (Min length: 1, Max length: 100)</p>
+        <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+            <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
+            <p>"Your text"</p>
+        </div>
+        <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+            <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
+            <p>"Invalid length"</p>
+        </div>
+    </div>
+</div>
+
+<div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Fake GET Request</h2>
+    <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/fackGetReq</code>.</p>
+    <div class="bg-blue-200 p-4 mt-2 rounded">
+        <p><strong>GET</strong>  https://zenova-server.onrender.com/fackGetReq</p>
+        <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+            <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
+            <p>Returns current request message</p>
+        </div>
+    </div>
+</div>
+
+        <div class="mb-6">
             <h2 class="text-xl font-semibold mb-2">Get Commands</h2>
             <p>To retrieve available commands, send a GET request to <code class="bg-blue-200 px-2 py-1 rounded break-words">https://zenova-server.onrender.com/getcmd</code>.</p>
             <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
@@ -201,7 +231,7 @@ module.exports = {
     <h2 class="text-xl font-semibold mb-2">Set Command</h2>
     <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/setcmd/{cmd}</code> to update the command.</p>
     <div class="bg-blue-200 p-4 mt-2 rounded">
-        <p>GET https://zenova-server.onrender.com/setcmd/{cmd}</p>
+        <p><strong>GET</strong>  https://zenova-server.onrender.com/setcmd/024</p>
         <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
             <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
             <p>"Command updated to: {cmd}"</p>
@@ -262,5 +292,16 @@ module.exports = {
       console.error('Error in setcmd:', error.message);
       res.status(500).send('Server Error');
     }
+  },
+  fackPutReq: (req, res) => {
+    let message = req.body.message;
+    if (!message || message.length < 1 || message.length > 100) {
+      return res.status(400).send('Invalid length');
+    }
+    res.send(message);
+  },
+
+  fackGetReq: (req, res) => {
+    res.send(request);
   },
 };
