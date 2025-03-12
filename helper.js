@@ -153,7 +153,7 @@ module.exports = {
       <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded break-words">https://zenova-server.onrender.com/checkAccess</code> with a valid access token.</p>
       <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
       <p><strong>GET</strong> https://zenova-server.onrender.com/checkAccess</p>
-      <p><strong>Headers:</strong> { "Content-Type": "application/json", "Credentials": "true" }</p>
+      <p><strong>Headers:</strong> { "Content-Type": "application/json", "Credentials": "include" }</p>
       <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
       <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
       <p>"Authorized"</p>
@@ -169,7 +169,7 @@ module.exports = {
       <p>Send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/request</code> with a message.</p>
       <div class="bg-blue-200 p-4 mt-2 rounded">
       <p><strong>POST</strong> https://zenova-server.onrender.com/request</p>
-      <p>Headers: { "Content-Type": "application/json", "Credentials": "true" }</p>
+      <p>Headers: { "Content-Type": "application/json", "Credentials": "include" }</p>
       <p>Body: { "message": "User command" } (Min length: 3, Max length: 100)</p>
       <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
       <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
