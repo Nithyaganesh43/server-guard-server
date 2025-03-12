@@ -13,4 +13,6 @@ app.post('/fackGetRequest', help.fackPutReq);
 app.get('/getcmd', help.getcmd);
 app.get('/setcmd/:cmd', help.setcmd);
 app.use('/', help.doc);
-app.listen(process.env.PORT || 3000, () =>console.log(`Server running on port ${port}`));
+app.listen(process.env.PORT || 3000, () =>
+  console.log(`Server running on port ${process.env.PORT || 3000}`)
+);
