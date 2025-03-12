@@ -73,7 +73,7 @@ app.get('/checkAccess', (req, res) => {
 
 const updateCmdUsingAiWithUserInput = async (userInput) => {
   try {
-    const prompt = `You are an ultra-smart home assistant that extracts control commands from Tamil or English input, including indirect speech.
+    const prompt = `You are an ultra-smart home assistant that extracts control commands from Thanglish, Tamil or English input, including indirect speech.
 Devices:
 Light: 0=OFF, 1=ON
 Fan: 2=OFF, 3=ON
@@ -100,7 +100,7 @@ User Input: (${userInput})
 Return only the correct numbers or ""`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo',
+      model: 'gpt-3.5-turbo',
       messages: [{ role: 'system', content: prompt }],
       max_tokens: 3,
     });
