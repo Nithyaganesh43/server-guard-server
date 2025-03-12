@@ -136,7 +136,7 @@ module.exports = {
             <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
                 <p><strong>POST</strong> https://zenova-server.onrender.com/getAccess</p>
                 <p><strong>Headers:</strong> { "Content-Type": "application/json" }</p>
-                <p><strong>Body:</strong> { "password": "your_password" } (Min length: 6, Max length: 20)</p>
+                <p><strong>Body:</strong> { "password": "api_password" } (don't use the password anywhere in client side)</p>
                 <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
                     <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
                     <p>"success"</p>
@@ -170,7 +170,7 @@ module.exports = {
             <div class="bg-blue-200 p-4 mt-2 rounded">
                 <p><strong>POST</strong> https://zenova-server.onrender.com/request</p>
                 <p>Headers: { "Content-Type": "application/json", "Credentials": "true" }</p>
-                <p>Body: { "message": "Your command" } (Min length: 3, Max length: 100)</p>
+                <p>Body: { "message": "User command" } (Min length: 3, Max length: 100)</p>
                 <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
                     <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
                     <p>"command_code Eg: 024"</p>
@@ -194,12 +194,17 @@ module.exports = {
         <p>Body: { "message": "Your text" } (Min length: 1, Max length: 100)</p>
         <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
             <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
-            <p>"Your text"</p>
+        <p>"command_code Eg: 024"</p>
+
         </div>
         <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
-            <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
-            <p>"Invalid length"</p>
-        </div>
+                    <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
+                    <p>"Invalid input length"</p>
+                </div>
+                <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+                    <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (403):</p>
+                    <p>"Access Denied"</p>
+                </div>
     </div>
 </div>
 
