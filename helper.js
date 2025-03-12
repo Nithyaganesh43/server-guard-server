@@ -2,7 +2,10 @@ require('dotenv').config();
 const rateLimit = require('express-rate-limit');
 const { OpenAI } = require('openai');
 const openai = new OpenAI({ apiKey: process.env.API_KEY });
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://zenova-two.vercel.app',
+];
 let cmd = '135';
 let request = '';
 const updateCmdUsingAiWithUserInput = async (userInput) => {

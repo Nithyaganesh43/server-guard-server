@@ -7,7 +7,7 @@ app.use(cookieParser());
 const cors = require('cors');
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000','https://zenova-two.vercel.app'],
     credentials: true,  
   })
 );
