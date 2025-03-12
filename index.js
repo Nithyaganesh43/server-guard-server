@@ -4,6 +4,15 @@ const help = require('./helper');
 const app = express();
 app.use(express.json({ limit: '1kb' }));
 app.use(cookieParser());
+const cors = require('cors');
+
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,  
+  })
+);
+
 app.use(help.cors);
 app.post('/getAccess', help.getAccess);
 app.get('/checkAccess', help.check);
