@@ -306,7 +306,8 @@ module.exports = {
     if (!message || message.length < 1 || message.length > 100) {
       return res.status(400).send('Invalid length');
     }
-    res.send(message);
+    request=message;
+    res.send(request);
   },
 
   fackGetReq: (req, res) => {

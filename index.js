@@ -14,9 +14,9 @@ app.use(
 app.use(help.cors);
 app.post('/getAccess', help.getAccess);
 app.get('/checkAccess', help.check);
+app.get('/fackGetRequest', help.fackGetReq);
+app.post('/fackSetRequest', help.fackPutReq);
 app.post('/request', help.limiter, help.req);
-app.post('/fackSetRequest', help.fackGetReq);
-app.post('/fackGetRequest', help.fackPutReq);
 app.get('/getcmd', help.getcmd);
 app.get('/setcmd/:cmd', help.setcmd);
 app.use('/', help.doc);
