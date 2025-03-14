@@ -307,7 +307,7 @@ module.exports = {
       return res.status(400).send('Invalid length');
     }
     request=message;
-    res.send(request);
+    res.send(`userInput Updated to ${request} and current cmd ${cmd}`);
   },
 
   fackGetReq: (req, res) => {
