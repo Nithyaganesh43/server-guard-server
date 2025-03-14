@@ -1,25 +1,81 @@
+require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
-const help = require('./helper');
+const rateLimit = require('express-rate-limit');
+const { WebSocketServer } = require('ws');
+const http = require('http');
+
+const ping = require('./util/ping-pong');
+const doc = require('./util/doc');
+const prompt = require('./util/prompt');
+const auth = require('./util/auth');
+const fack = require('./util/fack');
+
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+let cmd = '135';
+const clients = new Set();
+
 app.use(express.json({ limit: '1kb' }));
 app.use(cookieParser());
-const cors = require('cors');
-app.use(
-  cors({
-    origin: ['http://localhost:3000','https://zenova-two.vercel.app'],
-    credentials: true,  
-  })
-);
-app.use(help.cors);
-app.post('/getAccess', help.getAccess);
-app.get('/checkAccess', help.check);
-app.get('/fackGetReq', help.fackGetReq);
-app.post('/fackPutReq', help.fackPutReq);
-app.post('/request', help.limiter, help.req);
-app.get('/getcmd', help.getcmd);
-app.get('/setcmd/:cmd', help.setcmd);
-app.use('/', help.doc);
-app.listen(process.env.PORT || 3000, () =>
+app.use(auth);
+app.use(fack);
+app.use(ping);
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  keyGenerator: (req) => req.cookies.access_token || req.ip,
+  message: 'Too many requests, please try again later',
+});
+
+app.post('/request', limiter, async (req, res) => {
+  try {
+    if (req.cookies.access_token !== process.env.PASSWORD)
+      throw new Error('Access Denied');
+    const message = req.body?.message;
+    if (!message || message.length < 3 || message.length > 100)
+      return res.status(400).send('Invalid input length');
+    cmd = await prompt(message);
+    broadcastCmd();
+    res.send(cmd);
+  } catch (e) {
+    console.error('Error in /request:', e.message);
+    res.status(403).send('Access Denied');
+  }
+});
+
+app.get('/setcmd/:cmd', (req, res) => {
+  try {
+    if (!req.params.cmd) return res.status(400).send('Missing cmd parameter');
+    cmd = req.params.cmd;
+    broadcastCmd();
+    res.send(`Command updated to: ${cmd}`);
+  } catch (error) {
+    console.error('Error in setcmd:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.use('/', (req, res) => res.send(doc(cmd)));
+ 
+wss.on('connection', (ws) => {
+  clients.add(ws);
+  ws.send(cmd); 
+
+  ws.on('close', () => {
+    clients.delete(ws);
+  });
+});
+ 
+function broadcastCmd() {
+  for (const client of clients) {
+    if (client.readyState === 1) client.send(cmd);
+  }
+}
+
+server.listen(process.env.PORT || 3000, () =>
   console.log(`Server running on port ${process.env.PORT || 3000}`)
 );
