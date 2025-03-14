@@ -58,7 +58,7 @@ app.get('/setcmd/:cmd', (req, res) => {
     res.status(500).send('Server Error');
   }
 });
-
+app.get('/getcmd', (req, res) => res.send(cmd));
 app.use('/', (req, res) => res.send(doc(cmd)));
  
 wss.on('connection', (ws) => {

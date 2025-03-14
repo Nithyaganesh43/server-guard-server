@@ -111,10 +111,58 @@ const doc = (cmd)=>{
       <p><strong>Headers:</strong> { "Accept": "application/json" }</p>
       <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
       <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
-      <p>current cmd : "${cmd}"</p>
+      <p>"${cmd}"</p>
       </div>
       </div>
       </div>
+
+       <h2 class="text-xl font-semibold mb-2">Real-Time Command Updates</h2>
+  <p>ESP8266 devices can receive live command updates by connecting to the WebSocket server at <code class="bg-blue-200 px-2 py-1 rounded break-words">wss://zenova-server.onrender.com</code>.</p>
+  <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
+    <p><strong>WebSocket URL:</strong> <code>wss://zenova-server.onrender.com</code></p>
+    <p><strong>Protocol:</strong> WebSocket (ws/wss)</p>
+    <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+      <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> ESP8266 WebSocket Example:</p>
+<pre class="bg-black p-2 rounded break-words text-white">
+// Include WebSocket library
+#include <ESP8266WiFi.h>
+#include <WebSocketsClient.h>
+
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+WebSocketsClient webSocket;
+
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+    if (type == WStype_TEXT) {
+        Serial.print("Received Command: ");
+        Serial.println((char*)payload);
+        // Handle command (e.g., turn on motor)
+    }
+}
+
+void setup() {
+    Serial.begin(115200);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("Connected to WiFi");
+
+    webSocket.begin("zenova-server.onrender.com", 443, "/"); // Use 443 for wss
+    webSocket.onEvent(webSocketEvent);
+}
+
+void loop() {
+    webSocket.loop();
+}
+      </pre>
+      <p>Upon connection, ESP8266 will receive the latest command and updates automatically.</p>
+    </div>
+  </div>
+</div>
+
+
       <div class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Set Command</h2>
       <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/setcmd/{cmd}</code> to update the command.</p>
