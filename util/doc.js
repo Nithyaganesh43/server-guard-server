@@ -12,85 +12,51 @@ const doc = (cmd)=>{
       
       <div class="max-w-6xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-md transition-colors duration-300">
       <h1 class="text-2xl md:text-3xl font-bold mb-4 text-center">API Usage Guide</h1>
+     
       
+     
       <div class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Get Access</h2>
-      <p>To obtain access, send a POST request to <code class="bg-blue-200 px-2 py-1 rounded break-words">https://zenova-server.onrender.com/getAccess</code> with the correct password.</p>
-      <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
-      <p><strong>POST</strong> https://zenova-server.onrender.com/getAccess</p>
-      <p><strong>Headers:</strong> { "Content-Type": "application/json" }</p>
-      <p><strong>Body:</strong> { "password": "api_password" } (don't use the password anywhere in client side)</p>
-      <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
-      <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
-      <p>"success"</p>
-      </div>
-      <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
-      <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
-      <p>"Wrong Password"</p>
-      </div>
-      </div>
-      </div>
-      
-      <div class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Check Access</h2>
-      <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded break-words">https://zenova-server.onrender.com/checkAccess</code> with a valid access token.</p>
-      <div class="bg-blue-200 p-4 mt-2 rounded overflow-x-auto">
-      <p><strong>GET</strong> https://zenova-server.onrender.com/checkAccess</p>
-      <p><strong>Headers:</strong> { "Content-Type": "application/json", "Credentials": "include" }</p>
-      <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
-      <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
-      <p>"Authorized"</p>
-      </div>
-      <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
-      <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (403):</p>
-      <p>"Access Denied"</p>
-      </div>
-      </div>
-      </div>
-      <div class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Request Command</h2>
-      <p>Send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/request</code> with a message.</p>
-      <div class="bg-blue-200 p-4 mt-2 rounded">
-      <p><strong>POST</strong> https://zenova-server.onrender.com/request</p>
-      <p>Headers: { "Content-Type": "application/json", "Credentials": "include" }</p>
-      <p>Body: { "message": "User command" } (Min length: 3, Max length: 100)</p>
-      <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+  <h2 class="text-xl font-semibold mb-2">Request Command</h2>
+  <p>Send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/request</code> with a message.</p>
+  <div class="bg-blue-200 p-4 mt-2 rounded">
+    <p><strong>POST</strong> https://zenova-server.onrender.com/request</p>
+    <p>Headers: { "Content-Type": "application/json", "Credentials": "include" }</p>
+    <p>Body: { "API_KEY": "your_api_key", "message": "User command" } (Min length: 3, Max length: 100)</p>
+    <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
       <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
       <p>"command_code Eg: 024"</p>
-      </div>
-      <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+    </div>
+    <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
       <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
       <p>"Invalid input length"</p>
-      </div>
-      <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+    </div>
+    <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
       <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (403):</p>
       <p>"Access Denied"</p>
-      </div>
-      </div>
-      </div>
-      <div class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Fake PUT Request</h2>
-      <p>Send a post request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/fackPutReq</code> with a message.</p>
-      <div class="bg-blue-200 p-4 mt-2 rounded">
-      <p><strong>POST</strong> https://zenova-server.onrender.com/fackPutReq</p>
-      <p>Headers: { "Content-Type": "application/json" }</p>
-      <p>Body: { "message": "Your text" } (Min length: 1, Max length: 100)</p>
-      <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
+    </div>
+  </div>
+</div>
+     <div class="mb-6">
+  <h2 class="text-xl font-semibold mb-2">Fake PUT Request</h2>
+  <p>Send a POST request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/fackPutReq</code> with a message.</p>
+  <div class="bg-blue-200 p-4 mt-2 rounded">
+    <p><strong>POST</strong> https://zenova-server.onrender.com/fackPutReq</p>
+    <p>Headers: { "Content-Type": "application/json" }</p>
+    <p>Body: { "API_KEY": "your_api_key", "message": "Your text" } (Min length: 1, Max length: 100)</p>
+    <div class="bg-green-200 border-l-4 border-green-500 p-4 mt-2">
       <p class="text-green-700 font-bold"><i class="fas fa-check-circle"></i> Success Response (200):</p>
-      <p>"command_code Eg: 024"</p>
-      
-      </div>
-      <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+      <p>"userInput Updated to \"Your text\""</p>
+    </div>
+    <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
       <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (400):</p>
       <p>"Invalid input length"</p>
-      </div>
-      <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
+    </div>
+    <div class="bg-red-200 border-l-4 border-red-500 p-4 mt-2">
       <p class="text-red-700 font-bold"><i class="fas fa-times-circle"></i> Failed Response (403):</p>
       <p>"Access Denied"</p>
-      </div>
-      </div>
-      </div>
-      
+    </div>
+  </div>
+</div>
       <div class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Fake GET Request</h2>
       <p>Send a GET request to <code class="bg-blue-200 px-2 py-1 rounded">https://zenova-server.onrender.com/fackGetReq</code>.</p>
@@ -209,7 +175,7 @@ void loop() {
         <li><i class="fas fa-hand-point-right"></i> Each user can make a maximum of 100 requests per 15 minutes.</li>
         <li><i class="fas fa-hand-point-right"></i> If the limit is exceeded, the API will return a 429 error: "Too many requests, please try again later."</li>
         </ul>
-        <p class="mt-4">Additionally, access to the <code class="bg-blue-200 px-2 py-1 rounded">/request</code> API requires authentication using a valid access token.</p>
+        <p class="mt-4">Additionally, access to the <code class="bg-blue-200 px-2 py-1 rounded">/request</code> API requires authentication using a valid API_KEY</p>
         </div>
         </div>
         

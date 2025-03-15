@@ -7,8 +7,7 @@ const http = require('http');
 
 const ping = require('./util/ping-pong');
 const doc = require('./util/doc');
-const prompt = require('./util/prompt');
-const auth = require('./util/auth');
+const prompt = require('./util/prompt'); 
 const fack = require('./util/fack');
 
 const app = express();
@@ -20,7 +19,37 @@ const clients = new Set();
 
 app.use(express.json({ limit: '1kb' }));
 app.use(cookieParser());
-app.use(auth);
+  const cors = require('cors');
+
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://zenova-two.vercel.app',
+  ];
+
+  app.use(
+    cors({
+      origin: allowedOrigins,
+      credentials: true,
+    })
+  );
+
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader(
+        'Access-Control-Allow-Methods',
+        'GET, POST, PUT, DELETE, OPTIONS'
+      );
+      res.setHeader(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Authorization, X-Requested-With'
+      );
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
+    if (req.method === 'OPTIONS') return res.status(200).end();
+    next();
+  });
 app.use(fack);
 app.use(ping);
 
@@ -33,7 +62,7 @@ const limiter = rateLimit({
 
 app.post('/request', limiter, async (req, res) => {
   try {
-    if (req.cookies.access_token !== process.env.PASSWORD)
+    if (req.body?.API_KEY !== process.env.PASSWORD)
       throw new Error('Access Denied');
     const message = req.body?.message;
     if (!message || message.length < 3 || message.length > 100)
@@ -42,7 +71,6 @@ app.post('/request', limiter, async (req, res) => {
     broadcastCmd();
     res.send(cmd);
   } catch (e) {
-    console.error('Error in /request:', e.message);
     res.status(403).send('Access Denied');
   }
 });
