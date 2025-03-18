@@ -4,7 +4,8 @@ const openai = new OpenAI({ apiKey: process.env.API_KEY });
 
 const updateCmdUsingAiWithUserInput = async (userInput, cmd) => {
   try {
-    const prompt = `You are an ultra-smart home assistant that extracts control commands from Thanglish, Tamil or English input, including indirect speech.
+    const prompt = `You are an ultra-smart home assistant that extracts control 
+    commands from Thanglish, Tamil or English input, including indirect speech.
   Devices:
   Light: 0=OFF, 1=ON
   Fan: 2=OFF, 3=ON
@@ -18,15 +19,15 @@ const updateCmdUsingAiWithUserInput = async (userInput, cmd) => {
   - All: Turn all ON ("135") or OFF ("024") if needed.
   Rules:
   - Extract intent from context (emotion/situation).
-  - Return only necessary numbers (e.g., "14"), max **3** unique.
+  - Return only necessary numbers (e.g., "14"), max 3 unique numbers for not same devices.
   - No extra numbers, spaces, or text.
   - If no action, return "" (empty).
   Examples:
   "Thanni varala" → "4"
   "Room dark ah iruku" → "1"
   "Semma heat ah iruku" → "3"
-  "Window la kaathu pothum" → "2"
-  "I have enough ventilation" → "0"
+  "Window kaathe pothum" → "2"
+  "Its too bright bro!" → "0"
   User Input: (${userInput})
   Return only the correct numbers or nothing`;
 

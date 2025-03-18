@@ -7,7 +7,7 @@ const http = require('http');
 
 const ping = require('./util/ping-pong');
 const doc = require('./util/doc');
-const prompt = require('./util/prompt'); 
+const prompt = require('./util/prompt');
 const fack = require('./util/fack');
 
 const app = express();
@@ -19,37 +19,39 @@ const clients = new Set();
 
 app.use(express.json({ limit: '1kb' }));
 app.use(cookieParser());
-  const cors = require('cors');
+const cors = require('cors');
 
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'https://zenova-two.vercel.app',
-  ];
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://zenova-two.vercel.app',
+  'http://127.0.0.1:5500',
+  'https://zenovaremotecontroller.vercel.app',
+];
 
-  app.use(
-    cors({
-      origin: allowedOrigins,
-      credentials: true,
-    })
-  );
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
-  app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader(
-        'Access-Control-Allow-Methods',
-        'GET, POST, PUT, DELETE, OPTIONS'
-      );
-      res.setHeader(
-        'Access-Control-Allow-Headers',
-        'Content-Type, Authorization, X-Requested-With'
-      );
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-    }
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    next();
-  });
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, OPTIONS'
+    );
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, X-Requested-With'
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  next();
+});
 app.use(fack);
 app.use(ping);
 
@@ -88,16 +90,16 @@ app.get('/setcmd/:cmd', (req, res) => {
 });
 app.get('/getcmd', (req, res) => res.send(cmd));
 app.use('/', (req, res) => res.send(doc(cmd)));
- 
+
 wss.on('connection', (ws) => {
   clients.add(ws);
-  ws.send(cmd); 
+  ws.send(cmd);
 
   ws.on('close', () => {
     clients.delete(ws);
   });
 });
- 
+
 function broadcastCmd() {
   for (const client of clients) {
     if (client.readyState === 1) client.send(cmd);
