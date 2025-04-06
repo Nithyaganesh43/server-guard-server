@@ -19,7 +19,7 @@ Return only necessary numbers (e.g., "14"), max 3 unique numbers for not same de
 No extra numbers, spaces, or text.
 If no action, return  (empty).
 Examples:
-"Thanni varala"→"4"
+"Thanni varala"→"4"  
 "Water,pump,thanni"→"4"or"5"according to on or off
 "Room dark ah iruku"→"1"
 "Semma heat ah iruku"→"3"

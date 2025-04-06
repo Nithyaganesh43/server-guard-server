@@ -14,7 +14,9 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-let cmd = '135';
+let cmd = '135';  
+let state = { light: 1, fan: 1, pump: 1 };  
+
 const clients = new Set();
 
 app.use(express.json({ limit: '1kb' }));
@@ -52,6 +54,7 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   next();
 });
+
 app.use(fack);
 app.use(ping);
 
@@ -62,15 +65,38 @@ const limiter = rateLimit({
   message: 'Too many requests, please try again later',
 });
 
+const updateState = (newCmd) => {
+  const newState = { ...state };
+  if (newCmd.includes('0')) newState.light = 0;
+  if (newCmd.includes('1')) newState.light = 1;
+  if (newCmd.includes('2')) newState.fan = 0;
+  if (newCmd.includes('3')) newState.fan = 1;
+  if (newCmd.includes('4')) newState.pump = 0;
+  if (newCmd.includes('5')) newState.pump = 1;
+  return newState;
+};
+
 app.post('/request', limiter, async (req, res) => {
   try {
     if (req.body?.API_KEY !== process.env.PASSWORD)
       throw new Error('Access Denied');
+
     const message = req.body?.message;
     if (!message || message.length < 3 || message.length > 100)
       return res.status(400).send('Invalid input length');
-    cmd = await prompt(message);
-    broadcastCmd();
+
+    const newCmd = await prompt(message);
+    const newState = updateState(newCmd);
+
+    if (JSON.stringify(newState) !== JSON.stringify(state)) {
+      state = newState;
+      cmd = Object.entries(state)
+        .filter(([_, v]) => v === 1)
+        .map(([k]) => (k === 'light' ? '1' : k === 'fan' ? '3' : '5'))
+        .join('');
+      broadcastCmd();
+    }
+
     res.send(cmd);
   } catch (e) {
     res.status(403).send('Access Denied');
@@ -79,15 +105,20 @@ app.post('/request', limiter, async (req, res) => {
 
 app.get('/setcmd/:cmd', (req, res) => {
   try {
-    if (!req.params.cmd) return res.status(400).send('Missing cmd parameter');
-    cmd = req.params.cmd;
+    const newCmd = req.params.cmd;
+    if (!newCmd) return res.status(400).send('Missing cmd parameter');
+
+    state = updateState(newCmd);
+    cmd = newCmd;
     broadcastCmd();
+
     res.send(`Command updated to: ${cmd}`);
   } catch (error) {
     console.error('Error in setcmd:', error.message);
     res.status(500).send('Server Error');
   }
 });
+
 app.get('/getcmd', (req, res) => res.send(cmd));
 app.use('/', (req, res) => res.send(doc(cmd)));
 
