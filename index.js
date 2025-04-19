@@ -120,6 +120,11 @@ app.get('/setcmd/:cmd', (req, res) => {
 });
 
 app.get('/getcmd', (req, res) => res.send(cmd));
+
+
+   
+
+
 app.use('/', (req, res) => res.send(doc(cmd)));
 
 wss.on('connection', (ws) => {

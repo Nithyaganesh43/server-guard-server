@@ -40,7 +40,7 @@ User Input: (${userInput})
 Return only the correct numbers or nothing`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4-turbo',
       messages: [{ role: 'system', content: prompt }],
       max_tokens: 3,
     });
