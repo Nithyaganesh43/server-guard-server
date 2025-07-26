@@ -88,14 +88,20 @@ app.post('/request', limiter, async (req, res) => {
     const newCmd = await prompt(message);
     const newState = updateState(newCmd);
 
-    if (JSON.stringify(newState) !== JSON.stringify(state)) {
-      state = newState;
-      cmd = Object.entries(state)
-        .filter(([_, v]) => v === 1)
-        .map(([k]) => (k === 'light' ? '1' : k === 'fan' ? '3' : '5'))
-        .join('');
-      broadcastCmd();
-    }
+   const updatedCmd = Object.entries(newState)
+     .filter(([_, v]) => v === 1)
+     .map(([k]) => (k === 'light' ? '1' : k === 'fan' ? '3' : '5'))
+     .join('');
+
+   if (
+     updatedCmd !== cmd ||
+     JSON.stringify(newState) !== JSON.stringify(state)
+   ) {
+     state = newState;
+     cmd = updatedCmd;
+     broadcastCmd();
+   }
+
 
     res.send(cmd);
   } catch (e) {
@@ -108,9 +114,20 @@ app.get('/setcmd/:cmd', (req, res) => {
     const newCmd = req.params.cmd;
     if (!newCmd) return res.status(400).send('Missing cmd parameter');
 
-    state = updateState(newCmd);
-    cmd = newCmd;
-    broadcastCmd();
+    const newState = updateState(newCmd);
+    const updatedCmd = Object.entries(newState)
+      .filter(([_, v]) => v === 1)
+      .map(([k]) => (k === 'light' ? '1' : k === 'fan' ? '3' : '5'))
+      .join('');
+
+    if (
+      updatedCmd !== cmd ||
+      JSON.stringify(newState) !== JSON.stringify(state)
+    ) {
+      state = newState;
+      cmd = updatedCmd;
+      broadcastCmd();
+    }
 
     res.send(`Command updated to: ${cmd}`);
   } catch (error) {
@@ -118,6 +135,7 @@ app.get('/setcmd/:cmd', (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
 
 app.get('/getcmd', (req, res) => res.send(cmd));
 
