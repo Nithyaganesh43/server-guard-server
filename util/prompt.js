@@ -44,7 +44,7 @@ Return only the correct numbers or nothing`;
       messages: [{ role: 'system', content: prompt }],
       max_tokens: 3,
     });
-    console.log(response.choices?.[0]?.message?.content?.trim());
+    // console.log(response.choices?.[0]?.message?.content?.trim());
     return response.choices?.[0]?.message?.content?.trim() || '';
 
   } catch (error) {
