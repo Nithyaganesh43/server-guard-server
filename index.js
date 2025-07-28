@@ -73,6 +73,7 @@ const updateState = (newCmd) => {
   if (newCmd.includes('3')) newState.fan = 1;
   if (newCmd.includes('4')) newState.pump = 0;
   if (newCmd.includes('5')) newState.pump = 1;
+  //console.log(newState);
   return newState;
 };
 
@@ -86,6 +87,7 @@ app.post('/request', limiter, async (req, res) => {
       return res.status(400).send('Invalid input length');
 
     const newCmd = await prompt(message);
+    //console.log(newCmd);
     const newState = updateState(newCmd);
 
    const updatedCmd = Object.entries(newState)
@@ -93,17 +95,11 @@ app.post('/request', limiter, async (req, res) => {
      .map(([k]) => (k === 'light' ? '1' : k === 'fan' ? '3' : '5'))
      .join('');
 
-   if (
-     updatedCmd !== cmd ||
-     JSON.stringify(newState) !== JSON.stringify(state)
-   ) {
+    
      state = newState;
      cmd = updatedCmd;
-     broadcastCmd();
-   }
-
-
-    res.send(cmd);
+     broadcastCmd(); 
+    res.send(newCmd);
   } catch (e) {
     res.status(403).send('Access Denied');
   }
@@ -131,7 +127,7 @@ app.get('/setcmd/:cmd', (req, res) => {
 
     res.send(`Command updated to: ${cmd}`);
   } catch (error) {
-    console.error('Error in setcmd:', error.message);
+    //console.error('Error in setcmd:', error.message);
     res.status(500).send('Server Error');
   }
 });
