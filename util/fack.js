@@ -2,7 +2,7 @@ const fack = require('express').Router();
 let request = '';
 
 fack.get('/fackGetReq', (req, res) => {
-  res.send(request);
+  res.send("135");
 });
 
 fack.post('/fackPutReq', (req, res) => {
