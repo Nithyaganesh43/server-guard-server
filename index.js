@@ -24,6 +24,7 @@ app.use(cookieParser());
 
 const allowedOrigins=[
   'http://localhost:3000',
+  'https://zenova-assistant.vercel.app',
   'https://zenova-two.vercel.app',
   'http://127.0.0.1:5500',
   'https://zenovaremotecontroller.vercel.app',
