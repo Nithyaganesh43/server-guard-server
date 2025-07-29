@@ -1,147 +1,128 @@
 require('dotenv').config();
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
-const { WebSocketServer } = require('ws');
-const http = require('http');
-const cors = require('cors');
+const express=require('express');
+const cookieParser=require('cookie-parser');
+const rateLimit=require('express-rate-limit');
+const {WebSocketServer}=require('ws');
+const http=require('http');
+const cors=require('cors');
 
-const ping = require('./util/ping-pong');
-const doc = require('./util/doc');
-const prompt = require('./util/prompt');
-const fack = require('./util/fack');
+const ping=require('./util/ping-pong');
+const doc=require('./util/doc');
+const prompt=require('./util/prompt');
+const fack=require('./util/fack');
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const app=express();
+const server=http.createServer(app);
+const wss=new WebSocketServer({server});
 
-let cmd = '135';
-let state = { light: 1, fan: 1, pump: 1 };
+let cmd='135';
+let state={light:1,fan:1,pump:1};
+const clients=new Set();
 
-const clients = new Set();
-
-app.use(express.json({ limit: '1kb' }));
+app.use(express.json({limit:'1kb'}));
 app.use(cookieParser());
 
-const allowedOrigins = [
+const allowedOrigins=[
   'http://localhost:3000',
   'https://zenova-two.vercel.app',
   'http://127.0.0.1:5500',
   'https://zenovaremotecontroller.vercel.app',
 ];
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin:allowedOrigins,
+  credentials:true
+}));
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+app.use((req,res,next)=>{
+  const origin=req.headers.origin;
+  if(allowedOrigins.includes(origin)){
+    res.setHeader('Access-Control-Allow-Origin',origin);
+    res.setHeader('Access-Control-Allow-Methods','GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Allow-Credentials','true');
   }
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if(req.method==='OPTIONS')return res.status(200).end();
   next();
 });
 
 app.use(fack);
 app.use(ping);
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  keyGenerator: (req) => req.cookies.access_token || req.ip,
-  message: 'Too many requests, please try again later',
+const limiter=rateLimit({
+  windowMs:15*60*1000,
+  max:100,
+  keyGenerator:(req)=>req.cookies.access_token||req.ip,
+  message:'Too many requests, please try again later',
 });
 
-const updateState = (newCmd) => {
-  const newState = { ...state };
-  if (newCmd.includes('0')) newState.light = 0;
-  if (newCmd.includes('1')) newState.light = 1;
-  if (newCmd.includes('2')) newState.fan = 0;
-  if (newCmd.includes('3')) newState.fan = 1;
-  if (newCmd.includes('4')) newState.pump = 0;
-  if (newCmd.includes('5')) newState.pump = 1;
+const updateState=(newCmd)=>{
+  const newState={...state};
+  if(newCmd.includes('0'))newState.light=0;
+  if(newCmd.includes('1'))newState.light=1;
+  if(newCmd.includes('2'))newState.fan=0;
+  if(newCmd.includes('3'))newState.fan=1;
+  if(newCmd.includes('4'))newState.pump=0;
+  if(newCmd.includes('5'))newState.pump=1;
   return newState;
 };
 
-const computeCmd = (updatedState) => {
-  return Object.entries(updatedState)
-    .filter(([_, v]) => v === 1)
-    .map(([k]) => (k === 'light' ? '1' : k === 'fan' ? '3' : '5'))
-    .join('');
+const computeCmd=(updatedState)=>{
+  let result='';
+  result+=updatedState.light===1?'1':'0';
+  result+=updatedState.fan===1?'3':'2';
+  result+=updatedState.pump===1?'5':'4';
+  return result;
 };
 
-const broadcastCmd = () => {
-  for (const client of clients) {
-    if (client.readyState === 1) client.send(cmd);
+const broadcastCmd=()=>{
+  for(const client of clients){
+    if(client.readyState===1)client.send(cmd);
   }
 };
 
-app.post('/request', limiter, async (req, res) => {
-  try {
-    if (req.body?.API_KEY !== process.env.PASSWORD) throw new Error('Access Denied');
-
-    const message = req.body?.message;
-    if (!message || message.length < 3 || message.length > 100)
-      return res.status(400).send('Invalid input length');
-
-    const newCmd = await prompt(message);
-    const newState = updateState(newCmd);
-    const newComputedCmd = computeCmd(newState);
-
-    state = newState;
-    cmd = newComputedCmd;
+app.post('/request',limiter,async(req,res)=>{
+  try{
+    if(req.body?.API_KEY!==process.env.PASSWORD)throw new Error('Access Denied');
+    const message=req.body?.message;
+    if(!message||message.length<3||message.length>100)return res.status(400).send('Invalid input length');
+    const newCmd=await prompt(message);
+    const newState=updateState(newCmd);
+    const newComputedCmd=computeCmd(newState);
+    state=newState;
+    cmd=newComputedCmd;
     broadcastCmd();
-
     res.send(newCmd);
-  } catch (e) {
+  }catch(e){
     res.status(403).send('Access Denied');
   }
 });
 
-app.get('/setcmd/:cmd', (req, res) => {
-  try {
-    const newCmd = req.params.cmd;
-    if (!newCmd) return res.status(400).send('Missing cmd parameter');
-
-    const newState = updateState(newCmd);
-    const newComputedCmd = computeCmd(newState);
-
-    if (
-      newComputedCmd !== cmd ||
-      JSON.stringify(newState) !== JSON.stringify(state)
-    ) {
-      state = newState;
-      cmd = newComputedCmd;
+app.get('/setcmd/:cmd',(req,res)=>{
+  try{
+    const newCmd=req.params.cmd;
+    if(!newCmd)return res.status(400).send('Missing cmd parameter');
+    const newState=updateState(newCmd);
+    const newComputedCmd=computeCmd(newState);
+    if(newComputedCmd!==cmd||JSON.stringify(newState)!==JSON.stringify(state)){
+      state=newState;
+      cmd=newComputedCmd;
       broadcastCmd();
     }
-
     res.send(`Command updated to: ${cmd}`);
-  } catch (error) {
+  }catch(error){
     res.status(500).send('Server Error');
   }
 });
 
-app.get('/getcmd', (req, res) => res.send(cmd));
+app.get('/getcmd',(req,res)=>res.send(cmd));
+app.use('/',(req,res)=>res.send(doc(cmd)));
 
-app.use('/', (req, res) => res.send(doc(cmd)));
-
-wss.on('connection', (ws) => {
+wss.on('connection',(ws)=>{
   clients.add(ws);
   ws.send(cmd);
-  ws.on('close', () => {
-    clients.delete(ws);
-  });
+  ws.on('close',()=>{clients.delete(ws);});
 });
 
-server.listen(process.env.PORT || 3000, () =>
-  console.log(`Server running on port ${process.env.PORT || 3000}`)
-);
-
-// https://zenova-server.onrender.com
+server.listen(process.env.PORT||3000,()=>console.log(`Server running on port ${process.env.PORT||3000}`));
+//https://zenova-server.onrender.com
