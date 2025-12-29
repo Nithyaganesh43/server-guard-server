@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeNoVa</title>
+    <style>
+        body {
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+        }
+
+        /* Utility class to be toggled by JS */
+        .hidden {
+            display: none !important;
+        }
+
+        #header {
+            width: 100%;
+            background-color: black;
+            color: white;
+            padding: 1rem 0;
+            /* py-4 */
+            text-align: center;
+            font-size: 1.5rem;
+            /* 2xl */
+            font-weight: bold;
+        }
+
+        #controlPanel {
+            /* Default display is flex, JS removes .hidden to show this */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 56rem;
+            /* max-w-4xl */
+            margin-top: 1rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        .device-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .device-img {
+            width: 10rem;
+            /* w-40 */
+            height: 10rem;
+            /* h-40 */
+            object-fit: contain;
+        }
+
+        .switch-img {
+            width: 10rem;
+            /* w-40 */
+            height: auto;
+            margin-top: 0.5rem;
+            /* mt-2 */
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="header" class="hidden">ZeNoVa</div>
+
+    <div id="controlPanel" class="hidden">
+        <div class="grid-container">
+            <div class="device-wrapper">
+                <img id="fan" class="device-img">
+                <img id="fanSwitchImg" class="switch-img" onclick="toggleDevice('fan')">
+            </div>
+            <div class="device-wrapper">
+                <img id="light" class="device-img">
+                <img id="lightSwitchImg" class="switch-img" onclick="toggleDevice('light')">
+            </div>
+            <div class="device-wrapper">
+                <img id="pump" class="device-img">
+                <img id="pumpSwitchImg" class="switch-img" onclick="toggleDevice('pump')">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const states = {
+            fan: { off: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812952/OFF_FAN_w0gwvj.png', on: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812965/ON_FAN_rag7jk.gif', cmdOff: 2, cmdOn: 3 },
+            light: { off: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812952/OFF_LIGHT_umccer.png', on: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812953/ON_LIGHT_ydfubn.png', cmdOff: 0, cmdOn: 1 },
+            pump: { off: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812952/OFF_PUMP_dzggdz.jpg', on: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812953/ON_PUMP_dok0aa.gif', cmdOff: 4, cmdOn: 5 }
+        };
+        const switchStates = { off: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812952/OFF_SWITCH_z32zu0.jpg', on: 'https://res.cloudinary.com/ddiidlpk0/image/upload/v1754812953/ON_SWITCH_dykveo.jpg' };
+        let currentState = { light: 'off', fan: 'off', pump: 'off' };
+        let canToggle = true;
+        let API_KEY = localStorage.getItem("API_KEY") || prompt("Enter API Key:"); if (API_KEY) { localStorage.setItem("API_KEY", API_KEY); } else { alert("API Key required!"); location.reload(); }
+
+        function parseCommand(cmd) {
+            let newState = { light: 'off', fan: 'off', pump: 'off' };
+            cmd.split('').forEach(c => {
+                if (c == 1) newState.light = 'on';
+                if (c == 0) newState.light = 'off';
+                if (c == 3) newState.fan = 'on';
+                if (c == 2) newState.fan = 'off';
+                if (c == 5) newState.pump = 'on';
+                if (c == 4) newState.pump = 'off';
+            });
+            return newState;
+        }
+
+        function updateUI(cmd) {
+            currentState = parseCommand(cmd);
+            renderUI();
+        }
+
+        function renderUI() {
+            Object.keys(currentState).forEach(d => {
+                document.getElementById(d).src = states[d][currentState[d]];
+                document.getElementById(d + 'SwitchImg').src = switchStates[currentState[d]];
+            });
+        }
+
+        function toggleDevice(device) {
+            if (!canToggle) return;
+            canToggle = false;
+            setTimeout(() => canToggle = true, 100);
+
+            const cmd = currentState[device] === 'off' ? states[device].cmdOn : states[device].cmdOff;
+
+            fetch(`https://zenova-server.onrender.com/setcmd/${cmd}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ API_KEY: API_KEY })
+            }).catch(console.error);
+        }
+
+        function startControlPanel(cmd) {
+            document.getElementById("controlPanel").classList.remove("hidden");
+            document.getElementById("header").classList.remove("hidden");
+            updateUI(cmd);
+            let ws = new WebSocket("wss://zenova-server.onrender.com");
+            ws.onmessage = (event) => updateUI(event.data);
+        }
+
+        fetch("https://zenova-server.onrender.com/getcmd", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ API_KEY: API_KEY })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.text();
+            })
+            .then(cmd => startControlPanel(cmd))
+            .catch(() => {
+                // Handle error if needed
+                alert("Failed to start control panel.");
+            });
+    </script>
+
+</body>
+
+</html>
