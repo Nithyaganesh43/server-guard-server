@@ -97,6 +97,24 @@ app.post('/setcmd/:cmd', (req, res) => {
   }
 });
 
+
+// GET /setcmd/:cmd logic — you get cmd from req.params.cmd   store it into currentState directly.
+app.get('/setcmd/:cmd', (req, res) => {
+  try {
+    if (req.body?.API_KEY !== process.env.PASSWORD)
+      throw new Error('Access Denied');
+    const newCmd = req.params.cmd; //give contoll cmd 1-3 digits string
+
+    currentState = controllCmdTOsetCommand(newCmd);
+    broadcastCmd();
+    res.json({ message: `Command updated to`, currentState });
+  } catch (e) {
+    res.status(500).send(e.message);
+  }
+});
+
+
+
 app.post('/getcmd', (req, res) => {
   if (req.body?.API_KEY !== process.env.PASSWORD)
     throw new Error('Access Denied');
